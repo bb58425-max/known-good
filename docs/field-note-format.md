@@ -50,6 +50,25 @@ recorded_by:   who
 verified_by:   who reproduced it, or "unreproduced"
 ```
 
+## A second artifact: proven combinations
+
+A field note records a **diagnostic path**. Its sibling records a **working configuration** — the set of
+choices known to work together on a given platform: firmware version, storage mode, slot, drive family,
+memory configuration, OS and boot settings.
+
+These are different claims, and they belong in different files:
+
+- a **field note** answers *"what is wrong, and how do I find it"*
+- a **combination** answers *"which settings do I use on this machine so that it works at all"*
+
+Combinations are what make a fleet reproducible, and they are what make a diff between two machines
+meaningful — *"this one runs firmware X with storage in mode Y; the broken one differs only there."* An
+agent that can correlate proven combinations across units is doing something a person with a checklist
+cannot: it is comparing configurations across every machine it has ever seen, and flagging the difference
+that matters.
+
+Both artifacts live under the same rules: provenance, verification, and no credentials.
+
 ## Why `elimination` is not optional
 
 A symptom can have twenty causes. An ordered elimination tree with results is the only artifact that

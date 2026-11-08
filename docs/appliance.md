@@ -9,6 +9,28 @@ at the level below all of those.
 > conclusion was not "try harder" but "there should be a device plugged into this that can see what the
 > machine sees."
 
+## The goal, and the boundary
+
+In the author's words, the point of all of this is that *"troubleshooting would become integrated and near
+automated."* The goal is stated without hedging: **remove people.** Hours lost to a machine that cannot
+answer questions is a cost nobody should have to pay, and today's version of that cost was a bad afternoon
+on a box with a dead subsection.
+
+The boundary is stated just as plainly, and it is part of the specification rather than a footnote:
+
+> *"So long as humans still have the final say, at least for now and the foreseeable future."*
+
+Removing people from **toil** and removing people from **authority** are different projects. This one is the
+first, and it is designed so the second cannot happen by accident — human-authorised state changes, a
+complete audit trail, and an agent that can state its next action in a form a person can accept or reject in
+seconds. An agent whose reasoning cannot be audited cannot be supervised; it can only be ratified.
+
+**The autonomy boundary today is the physical-actuation line.** The system should do everything up to the
+point where something must be touched, unplugged, reseated or replaced — and at that point ask for hands,
+having already narrowed the request to a specific, ordered list of physical actions. *"You could have done
+all this troubleshooting and only asked me for help when you needed my hands."* Robotic actuation is the
+later phase that moves that line; every phase above it has value before a single joint moves.
+
 ## What it must do
 
 Drive a machine that is **dead as far as software is concerned**:
