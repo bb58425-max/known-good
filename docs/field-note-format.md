@@ -69,6 +69,29 @@ that matters.
 
 Both artifacts live under the same rules: provenance, verification, and no credentials.
 
+## Generic first-line tree: a new machine that won't install, or "can't see" its storage
+
+Derived from a real entry in `entries/`, ordered by what actually settles the question fastest. A full day was
+spent getting to step 4, and step 4 was the answer.
+
+1. **Is the device visible to software?** A Linux shell (`lsblk`, `nvme list`) or GRUB (`ls`). Visible → it is
+   not dead. This takes a minute and eliminates the RMA class immediately.
+2. **Which boot mode are you in?** In GRUB, `echo $grub_platform`. In `efi`, GRUB enumerates disks through the
+   *firmware* — so what it lists is the firmware's own view. In `pc`, GRUB uses its own drivers and its view is
+   independent evidence. **The same observation means opposite things.**
+3. **Usable, but missing from the firmware's setup screen?** That is a **display gap**, not an enumeration
+   failure. Install anyway: a UEFI boot entry is created by the installed bootloader, not by the setup utility.
+4. **Installer hanging at varying points?** **Suspect the installer's kernel age before the hardware.** New
+   silicon frequently outruns older installer kernels, and a hang whose location varies looks exactly like
+   marginal hardware. Try the newest distro release before anything else. *This was the actual fix and it was
+   tried last.*
+5. **Only now attack the device directly:** write-and-verify, link negotiation (`lspci -vv`, LnkSta vs LnkCap),
+   SMART (`nvme smart-log`).
+6. **Only then consider an RMA.**
+
+> **Record the installer's kernel version whenever an install fails.** On new hardware it is a first-class
+> variable — and it is the one nobody writes down, which is how the same afternoon gets spent twice.
+
 ## Why `elimination` is not optional
 
 A symptom can have twenty causes. An ordered elimination tree with results is the only artifact that

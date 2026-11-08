@@ -259,3 +259,52 @@ resolution_provisional:
   confidence: high
   contradicts: both earlier root-cause readings in this note
 ```
+
+## RESOLVED — the hang was kernel age, not hardware (same day, end of day)
+
+**Fedora Server 45** — released 2026-11-03, days old — **installed cleanly and is running.** Ubuntu Server
+24.04.5 hung at varying points on the same machine, with the same drive.
+
+That closes every open question in this note:
+
+| Question | Answer |
+|---|---|
+| Is the NVMe dead? | **No.** It now has an operating system on it. |
+| Does the firmware enumerate it? | **Yes** — it handed the disk to GRUB in EFI mode, and it boots. |
+| Why is it absent from the BIOS setup screen? | A **setup-UI display gap.** Cosmetic. It never blocked anything. |
+| Why did installers hang at varying points? | **Kernel age on brand-new silicon.** The Ryzen AI 9 HX 370 / Radeon 890M platform is very new, and the older installer's kernel support was incomplete for it. A current kernel works. |
+| Was the RMA warranted? | **No.** Cancelled — a good unit was about to be shipped back. |
+
+*(The exact kernel version of the Ubuntu 24.04.5 ISO was not recorded. That is itself a gap: on new silicon,
+the installer's kernel version is the first thing to write down.)*
+
+**The lesson that would have saved the entire day:**
+
+> **On brand-new silicon, try the newest distro release before condemning hardware.** An installer that hangs
+> at *varying* points looks exactly like marginal hardware, and is very often an old kernel meeting new
+> chipsets. The decisive question was never "is the drive alive" — it was **"is the kernel new enough to know
+> this platform?"**
+
+**Ranked first-line checks for "new machine, installer or storage trouble", rewritten from the day's evidence:**
+
+1. Is the drive visible to **software** (GRUB or a Linux shell)? Yes → it is not dead.
+2. Establish the **boot mode** — `echo $grub_platform`. In `efi`, GRUB's disk list *is* the firmware's view; in
+   `pc`, it is GRUB's own and independent. Same observation, opposite meaning.
+3. Missing from the **firmware setup UI** but usable anyway? → display gap. Install and carry on.
+4. **Installers hanging at varying points → suspect the kernel's age before the hardware.** Try the newest
+   release. *(This was the actual fix, and it was tried last.)*
+5. Only then run write-verify tests — and only then consider an RMA.
+
+**Cost of the day:** the whole session, plus an unnecessary RMA raised and cancelled. **Cost with this note in
+hand:** swap the install ISO. That is this entry earning its place.
+
+```yaml
+resolution:
+  date: 2026-11-07
+  outcome: Fedora Server 45 installed and running; Ubuntu Server 24.04.5 hung on the same hardware and drive
+  root_cause: kernel age on a very new AMD platform — not storage hardware
+  secondary_finding: firmware setup UI omits the NVMe; the firmware block layer exposes and boots it
+  rma: raised, then cancelled as unwarranted
+  confidence: high
+  open: nothing blocking
+```
