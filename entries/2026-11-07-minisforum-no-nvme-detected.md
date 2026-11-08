@@ -7,7 +7,7 @@ fingerprint:
   board_revision: unknown
   firmware: unknown — not recorded before RMA
   platform: AMD Ryzen AI 9 HX 370 (12C/24T) / Radeon 890M; dual DDR5-5600 SO-DIMM, board max 128 GB
-  memory: 96 GB (2×48 GB DDR5-5600)
+  memory: 96 GB (2×48 GB DDR5-5600, both channels populated)
   storage_topology: 3× M.2 2280 PCIe 4.0 — SSD0 and SSD1 are PCIe 4.0 x4; SSD2 is PCIe 4.0 x1 (vendor spec)
   drive_intended: Samsung 970 EVO 2 TB (PCIe 3.0 x4 — backward compatible in a Gen4 slot)
   os: none installed — fault found during first bring-up
@@ -80,6 +80,11 @@ Three consequences worth having on the record:
 3. **The drive was never a compatibility question.** PCIe 3.0 x4 in a PCIe 4.0 slot is fully backward
    compatible — it simply runs at its own ~3.5 GB/s ceiling instead of the slot's ~7 GB/s. It was also
    separately proven working in another machine.
+4. **No local redundancy, by design.** RAID was considered and rejected for this node: resilience comes
+   from graceful failover to the cloud and to a second machine, not from a mirror inside one box. So a
+   storage-subsystem failure is a **restore** event, not a **rebuild** event — which makes the
+   snapshot/restore path the load-bearing component, not the array. Worth stating in a note like this
+   because it decides what the next person should do when a slot dies: restore, don't rebuild.
 
 ## What this note is for
 
