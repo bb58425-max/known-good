@@ -78,7 +78,10 @@ cause and resolution. The expensive part gets recorded as a side effect of doing
 independent reproductions, and explicit conflict flags. Provenance is not optional: an unattributed entry
 is deleted, not merged.
 
-**Phase 4 — the appliance (reference BOM).** One small box per machine:
+**Phase 4 — the appliance.** One small box per machine, specified in full in
+[`docs/appliance.md`](docs/appliance.md) — hardware BOM, the image library and working space, the local
+skill router with a generic fallback, the gating model, and the prior-art/patentability reality. At a
+glance:
 
 - HDMI capture in (1080p60 minimum, for BIOS/UEFI compatibility)
 - USB HID out — keyboard and mouse emulation
