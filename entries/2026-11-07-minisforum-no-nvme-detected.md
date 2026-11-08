@@ -106,3 +106,46 @@ The hours were not lost to the fault. They were lost to the absence of:
 
 The first is a document. The second is a corpus. The third is a $60 appliance. This note is the beginning
 of the first two.
+
+## Follow-up — same day, later (2026-11-07)
+
+New evidence arrived after the RMA was raised, and it **partly contradicts the root cause recorded above.**
+Appended rather than edited, per this repository's rule: the front matter stands as what was known at the
+time, because the sequence of belief is itself the useful part.
+
+- The NVMe drive **is functional**: it is visible from **GRUB**, and **writes to it succeed**.
+- The **firmware still does not enumerate it** — the drive is absent from the firmware's own storage view.
+- The **RMA remains open and unshipped**, so this is the same unit with new information rather than a
+  replacement.
+
+**Revised assessment: not dead silicon — a firmware-level enumeration or visibility fault.** When software
+drivers (Linux, GRUB) enumerate and drive a device correctly while the firmware does not list it at all, the
+fault sits in the firmware's NVMe driver or its reporting, not in the drive, and not necessarily in the slot.
+
+**The test that should have come first — recorded here so it does next time:** determine whether the drive
+is visible to *software* before condemning hardware. A Linux live environment, or GRUB's own `ls`, answers
+it in a minute. Writes succeeding is the strongest form of the answer.
+
+**And the decisive firmware-side test:** from a **UEFI Shell**, `map -r` lists what the firmware *itself* can
+read. If the NVMe's ESP appears there, the firmware can boot from it and only the boot entry needs creating
+(`efibootmgr -c -d /dev/nvme0n1 -p 1 -L Fedora -l '\EFI\fedora\grubx64.efi'`). If it does not appear, the
+firmware's NVMe driver genuinely will not bind, and the fallback is to keep the **ESP on a removable device
+with the root filesystem on the NVMe**.
+
+Also in the "cheap and first" class, and skipped on the day: **check for a firmware update.** Vendor BIOS
+releases routinely carry NVMe enumeration fixes, and a firmware that fails where Linux succeeds is precisely
+the signature of a firmware bug rather than a hardware one.
+
+```yaml
+follow_up:
+  date: 2026-11-07
+  status: drive proven functional (GRUB-visible, writes succeed); firmware does not enumerate it;
+          RMA open and unshipped
+  revised_root_cause: firmware NVMe enumeration/visibility fault — not dead silicon
+  confidence: medium
+  confidence_reason: the drive is proven good by write test; the firmware-visibility conclusion is inferred
+                     from software seeing what firmware cannot, and is not yet confirmed by the UEFI shell
+                     test or a firmware update
+  contradicts: this note's own earlier root_cause
+  next_tests: [UEFI shell `map -r`, vendor firmware update, create boot entry with efibootmgr]
+```
