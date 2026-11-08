@@ -3,11 +3,13 @@ id: minisforum-no-nvme-detected
 date: 2026-11-07
 fingerprint:
   vendor: Minisforum
-  model: mini-PC, 96 GB DDR5, 2 TB Samsung NVMe intended (exact model to be filled in)
+  model: AI X1 Pro (Ryzen AI 9 HX 370)
   board_revision: unknown
   firmware: unknown — not recorded before RMA
-  platform: unknown
-  storage_topology: three M.2 slots; none enumerated; no other M.2 populated
+  platform: AMD Ryzen AI 9 HX 370 (12C/24T) / Radeon 890M; dual DDR5-5600 SO-DIMM, board max 128 GB
+  memory: 96 GB (2×48 GB DDR5-5600)
+  storage_topology: 3× M.2 2280 PCIe 4.0 — SSD0 and SSD1 are PCIe 4.0 x4; SSD2 is PCIe 4.0 x1 (vendor spec)
+  drive_intended: Samsung 970 EVO 2 TB (PCIe 3.0 x4 — backward compatible in a Gen4 slot)
   os: none installed — fault found during first bring-up
 symptom: No NVMe device visible in BIOS on any of three M.2 slots; storage drivers never load; the machine otherwise powers up normally.
 evidence:
@@ -31,13 +33,15 @@ elimination:
   - step: BIOS exploration (deep settings) and hard reset
     result: no change
     proved: not a stale-configuration problem reachable by reset
-  - step: unknown — whether Intel VMD / RST storage mode was toggled
+  - step: BIOS storage mode — legacy/CSM boot mode, and any AMD RAID mode toggle
     result: not recorded
-    proved: nothing; flagged because it is a common cause of exactly this symptom
-  - step: unknown — whether the board's storage/lane compatibility matrix was consulted
-    result: not recorded
-    proved: nothing; on many boards M.2 slots share lanes and are disabled by design in some populated configurations
-root_cause: unresolved — suspected dead NVMe/PCIe subsection or lane/root-port failure. Platform-level, since firmware never enumerates any device on three slots while the rest of the machine works.
+    proved: nothing; flagged as a first-line check for this symptom
+    note: Intel VMD/RST is an Intel-platform setting and does NOT apply to this AMD box; the analogous
+      suspects here are CSM/legacy mode and AMD RAID (RaidX) mode
+  - step: Vendor storage/lane matrix consulted
+    result: recorded *after* the fault, from the vendor product page — see "Vendor spec" below
+    proved: the three slots do not share one lane configuration (SSD0/SSD1 are x4, SSD2 is x1)
+root_cause: unresolved — suspected dead NVMe/PCIe subsection or lane/root-port failure. Platform-level, since firmware never enumerates any device on three slots while the rest of the machine works. The lane matrix makes a lane-allocation explanation *less* likely: three dead slots spanning two different lane configurations point at something common upstream — the SoC PCIe complex, the M.2 power rail, or the connector plane.
 resolution: RMA'd. No software fix was attempted beyond BIOS reset and drive isolation.
 known_good:
   - external USB storage (worked throughout)
@@ -53,15 +57,39 @@ recorded_by: Bill (operator), with JJ Hermes (recording)
 verified_by: unreproduced — unit RMA'd before confirmation
 ---
 
+## Vendor spec (recorded after the fault, 2026-11-07)
+
+From the vendor's product page for the AI X1 Pro:
+
+| Item | Value |
+|---|---|
+| Platform | AMD Ryzen AI 9 HX 370 (12C/24T), Radeon 890M |
+| Memory | dual DDR5-5600 SO-DIMM, **max 128 GB** (this unit: 96 GB = 2×48 GB) |
+| SSD0 / SSD1 | M.2 2280 **PCIe 4.0 x4** — 6,700–7,300 MB/s |
+| SSD2 | M.2 2280 **PCIe 4.0 x1** — 1,500–1,900 MB/s |
+| Capacity | up to 12 TB across the three slots |
+| Other | dual USB4, OCuLink, 2.5 GbE, Wi-Fi 7, SD slot |
+
+Three consequences worth having on the record:
+
+1. **The slots are not equivalent.** SSD2 is x1, not x4 — roughly a quarter of the bandwidth. The boot
+   drive belongs in SSD0. Worth knowing *before* buying three drives.
+2. **The fault spanned two different lane configurations.** SSD0/SSD1 (x4) and SSD2 (x1) failed
+   identically. That is evidence *against* a lane-allocation or bifurcation cause, and *for* something
+   common and upstream of the slots.
+3. **The drive was never a compatibility question.** PCIe 3.0 x4 in a PCIe 4.0 slot is fully backward
+   compatible — it simply runs at its own ~3.5 GB/s ceiling instead of the slot's ~7 GB/s. It was also
+   separately proven working in another machine.
+
 ## What this note is for
 
 Not the answer — the **order**. Anyone hitting "no NVMe in BIOS" on a machine like this should be able to
 run steps 1-4 above before spending an hour in deep BIOS, and should know that "drive works elsewhere" is
 the test that splits host fault from media fault.
 
-Two steps were never recorded, and both are cheap to run first next time: the **VMD/RST storage mode**
-toggle, and the board's **storage/lane compatibility matrix** (M.2 slots frequently share lanes with SATA
-ports or other slots, and are disabled by design in certain populated configurations).
+Two checks were never run at the time, and both are first-line for this symptom: **legacy/CSM boot mode**
+and any **AMD RAID (RaidX) mode** toggle — note that Intel's VMD/RST is an Intel-platform setting and does
+not apply to this box — plus the vendor **lane matrix** recorded above, which only surfaced afterwards.
 
 ## The meta-lesson
 
