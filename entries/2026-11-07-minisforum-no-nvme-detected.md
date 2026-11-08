@@ -149,3 +149,28 @@ follow_up:
   contradicts: this note's own earlier root_cause
   next_tests: [UEFI shell `map -r`, vendor firmware update, create boot entry with efibootmgr]
 ```
+
+## Correction to the follow-up above (same day)
+
+The follow-up claims the drive is *"proven functional"* and that *"writes succeed."* That is **stronger than
+the evidence supports** and is corrected here rather than quietly edited out — the recorder's own
+overstatement is exactly the kind of thing this format exists to catch.
+
+- The drive has been seen in **exactly one place: GRUB.** No installer, no installed OS, and no firmware
+  storage page has enumerated it.
+- The Ubuntu installer **hangs at various points.** It *appears* to be writing; **no write has been
+  verified.**
+- So "visible to software" is **not** established — only "visible to GRUB". Confidence drops from medium to
+  **low**.
+
+Two precision notes that make GRUB-visibility weaker evidence than it appears:
+
+1. **The boot mode decides what it proves.** In **UEFI** mode GRUB reaches disks through the firmware's own
+   block I/O, so seeing the drive would mean *the firmware* can see it — contradicting the reported symptom.
+   In **legacy/CSM** mode GRUB uses its own drivers and says nothing about firmware visibility. Which mode
+   was in use must be recorded before this observation carries any weight.
+2. **An installer that hangs mid-write is a reliability signal, not only a visibility one.** Until a full
+   write-and-verify pass completes (`f3write`/`f3read`, or `badblocks -w`), the drive's health is unproven.
+
+**Revised status — honest as of this correction:** drive healthy? unknown. Slot working? unknown. Firmware
+visibility? unknown. What *is* established: the drive is not entirely invisible, because GRUB listed it.
