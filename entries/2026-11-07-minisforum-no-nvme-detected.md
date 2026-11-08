@@ -174,3 +174,37 @@ Two precision notes that make GRUB-visibility weaker evidence than it appears:
 
 **Revised status — honest as of this correction:** drive healthy? unknown. Slot working? unknown. Firmware
 visibility? unknown. What *is* established: the drive is not entirely invisible, because GRUB listed it.
+
+## Reassessment — the hardware reading is probably right (same day, later still)
+
+The recorder's firmware-visibility hypothesis rested on *"the drive is visible to software and writes
+succeed."* That claim has since been withdrawn by the person at the machine, and the hypothesis weakens with
+it. The evidence now reads as **bus-level presence with a storage pathway that has never actually worked**:
+
+- **Firmware storage page: absent.** The operator's objection is correct and important — a firmware storage
+  page normally lists NVMe devices *it can initialize*. Absence there is not "not listed yet"; it is a
+  failure to initialise.
+- **GRUB: a device on a bus.** PCIe-level enumeration is not a working NVMe namespace. Nothing mountable has
+  ever been observed. No partition, anywhere.
+- **Installer: hangs at varying points, under write load.** This is the strongest single signal. Software and
+  configuration faults fail *deterministically*; failures whose location varies, and which occur under I/O
+  load, are the signature of **marginal hardware**.
+
+Taken together — PCIe visible, storage unreliable — this is consistent with the original dead/marginal
+subsection reading. **The operator's suspicion is better supported than the recorder's hypothesis was.**
+
+Two discriminators, in order of decisiveness:
+
+1. **Is there a namespace?** `nvme list`, `nvme id-ns`, or `cat /sys/block/nvme0n1/size`. A namespace with a
+   sensible capacity means the controller is alive and this is a *stability* problem. No namespace means
+   controller-level failure — hardware — and the RMA is the answer.
+2. **What did the link negotiate?** `lspci -vv` on the device, comparing **LnkCap** against **LnkSta**. A link
+   trained at x1, or at a lower PCIe generation than the slot supports, indicates a marginal slot, trace, or
+   drive.
+
+Also worth reading verbatim: `dmesg | grep -i nvme` — controller resets and command timeouts are explicit
+evidence of a link or device failing, as opposed to merely being slow.
+
+**Operational caution recorded with this reassessment:** do not build a node on storage that is only
+*probably* good. An installation that appears to succeed on a marginal device is worse than one that fails
+cleanly — it yields a node that corrupts silently later. Verify the pathway, or take the RMA.
