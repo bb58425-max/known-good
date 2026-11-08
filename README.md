@@ -121,7 +121,9 @@ entry written from it is in [`entries/`](entries/) — including the parts that 
 ## Status
 
 **Specification. No code yet.** This is a call for collaborators: the format, the corpus and the gated
-write path are the interesting problems, and they are all still ahead.
+write path are the interesting problems, and they are all still ahead. If you want to *build* the thing,
+[`docs/getting-it-built.md`](docs/getting-it-built.md) has the acceptance test, the channels to find a
+builder, and the deal structures.
 
 ## License
 
