@@ -208,3 +208,54 @@ evidence of a link or device failing, as opposed to merely being slow.
 **Operational caution recorded with this reassessment:** do not build a node on storage that is only
 *probably* good. An installation that appears to succeed on a marginal device is worse than one that fails
 cleanly — it yields a node that corrupts silently later. Verify the pathway, or take the RMA.
+
+## Resolution (provisional) — the drive is fine, the firmware just doesn't *show* it
+
+`echo $grub_platform` returned **`efi`**, and that single value decides how to read everything else: in EFI
+mode GRUB enumerates disks through the **firmware's** block I/O, so a device GRUB lists is a device *the
+firmware already has a working block driver for*.
+
+With that established:
+
+- `ls` → **hd0** = the external 1 TB, two msdos partitions, formatted and readable
+- `ls` → **hd1** = the 2 TB drive, listed as a block device, **unformatted** — expected, since no install
+  ever completed
+
+**Conclusion: the NVMe is enumerated by the firmware and addressable at block level.** Neither of the two
+earlier readings survives intact:
+
+- the original **"dead NVMe subsection"** is **not supported** — the device answers
+- the **"firmware cannot enumerate it"** hypothesis is **also not supported** — the firmware produced the
+  block device
+
+What remains true is the observation that started the disagreement: the drive is **absent from the
+firmware's setup screen**. That is now best explained as a **display/reporting gap in the setup utility** —
+cosmetic, and not a barrier to booting, because a UEFI boot entry is created by an installed bootloader and
+the firmware's block access is already proven.
+
+**The unexplained residue is reliability, not visibility.** Installers hanging at varying points under
+write load is not explained by anything in this entry. But that question is now narrow and testable: a full
+write-and-verify pass (`f3write`/`f3read`, or `badblocks -w` on the empty device). Pass → the drive is good
+and the hangs were media or platform-driver problems. Fail or wedge → the drive is marginal, and the RMA
+instinct was right after all.
+
+**Lessons recorded, because they would have saved the afternoon:**
+
+1. **Establish the boot mode first.** `echo $grub_platform`: in `efi`, GRUB's disk list *is* the firmware's
+   view; in `pc` it is GRUB's own, and therefore independent evidence. The same observation means opposite
+   things depending on it.
+2. **A device missing from a firmware's setup UI is not evidence the firmware cannot use it.** The setup
+   utility and the runtime driver stack are different things, and they disagree more often than anyone
+   expects.
+3. **Both earlier theories in this entry were wrong, and the entry is more useful for showing it.** The
+   order that resolved it — software-visible → firmware-visible → UI-visible — is the reusable part.
+
+```yaml
+resolution_provisional:
+  date: 2026-11-07
+  finding: NVMe enumerated as hd1 by the firmware's own block layer (GRUB in EFI mode); unformatted, as expected
+  verdict: drive functional; "invisible in BIOS" is a setup-UI reporting gap, not an enumeration failure
+  open: stability under sustained write load (installer hangs) — needs a write-and-verify pass
+  confidence: high
+  contradicts: both earlier root-cause readings in this note
+```
